@@ -2,9 +2,26 @@
   <div class="app" :class="{ 'dark-mode': darkMode }">
     <header>
       <h1>Тестирование фармацевта</h1>
-      <button @click="toggleDarkMode" class="theme-toggle">
-        {{ darkMode ? '☀️' : '🌙' }}
-      </button>
+      <div class="header-controls">
+        <button
+            v-if="testStarted && !testFinished"
+            @click="finishTest"
+            class="finish-btn"
+        >
+          Закончить тест
+        </button>
+        <button
+            v-if="hasStatistics"
+            @click="showStatsModal"
+            class="stats-btn"
+        >
+          📊 Статистика ({{ Object.keys(stats).length }})
+        </button>
+
+        <button @click="toggleDarkMode" class="theme-toggle">
+          {{ darkMode ? '☀️' : '🌙' }}
+        </button>
+      </div>
     </header>
 
     <main>
@@ -23,11 +40,10 @@
           @answer="answerQuestion"
           @next="nextQuestion"
           @show-image="showImage"
-          @finish="finishTest"
       />
 
       <Results
-          v-else-if="testFinished"
+          v-else
           :results="results"
           :questions="shuffledQuestions"
           @restart="handleRestart"
@@ -35,16 +51,30 @@
       />
     </main>
 
-    <Modal v-if="modalImage" :image="modalImage" @close="closeModal" />
+    <!-- Модальное окно статистики -->
+    <StatsModal
+        v-if="showStats"
+        :stats="stats"
+        :questions="questions"
+        @close="closeStatsModal"
+    />
+
+    <!-- Модальное окно изображения -->
+    <Modal
+        v-if="modalImage"
+        :image="modalImage"
+        @close="closeModal"
+    />
   </div>
 </template>
 
 <script>
-import { onMounted } from 'vue'
+import { computed, onMounted } from 'vue'
 import ModeSelection from './components/ModeSelection.vue'
 import Question from './components/Question.vue'
 import Results from './components/Results.vue'
 import Modal from './components/Modal.vue'
+import StatsModal from './components/StatsModal.vue'
 import { store } from './store'
 
 export default {
@@ -53,11 +83,13 @@ export default {
     ModeSelection,
     Question,
     Results,
-    Modal
+    Modal,
+    StatsModal
   },
 
   setup() {
     const {
+      // Состояние
       currentMode,
       currentQuestionIndex,
       selectedAnswers,
@@ -68,18 +100,31 @@ export default {
       showAnswerResult,
       darkMode,
       modalImage,
+      showStats,
+      stats,
+      questions,
+
+      // Методы
       startTest,
       answerQuestion,
       nextQuestion,
       restartTest,
       finishTest,
-      restoreProgress,
       toggleDarkMode,
       showImage,
       closeModal,
+      showStatsModal,
+      closeStatsModal,
+      restoreProgress,
+
+      // Вычисляемые свойства
       currentQuestion,
       shuffledAnswers
     } = store()
+
+    const hasStatistics = computed(() => {
+      return Object.keys(stats.value).length > 0
+    })
 
     const handleRestart = () => {
       restartTest()
@@ -91,6 +136,7 @@ export default {
     })
 
     return {
+      // Состояние
       currentMode,
       currentQuestionIndex,
       selectedAnswers,
@@ -101,188 +147,162 @@ export default {
       showAnswerResult,
       darkMode,
       modalImage,
+      showStats,
+      stats,
+      questions,
+
+      // Методы
       startTest,
       answerQuestion,
       nextQuestion,
-      restartTest,
+      handleRestart,
       finishTest,
       toggleDarkMode,
       showImage,
       closeModal,
+      showStatsModal,
+      closeStatsModal,
+
+      // Вычисляемые свойства
       currentQuestion,
       shuffledAnswers,
-      handleRestart
+      hasStatistics
     }
   }
 }
 </script>
 
-<style>
-/* Стили остаются без изменений */
-:root {
-  --primary-color: #4CAF50;
-  --primary-dark: #2E7D32;
-  --error-color: #f44336;
-  --error-dark: #c62828;
-  --info-color: #2196F3;
-  --info-dark: #1565C0;
-  --correct-color: #FFB74D;
-  --correct-dark: #E65100;
-  --text-light: #333;
-  --text-dark: #f0f0f0;
-  --bg-light: #f9f9f9;
-  --bg-dark: #1a1a1a;
-  --card-light: #fff;
-  --card-dark: #2d2d2d;
-}
-
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  font-family: Arial, sans-serif;
-  line-height: 1.6;
-}
-
+<style scoped>
 .app {
   max-width: 800px;
   margin: 0 auto;
   padding: 20px;
   min-height: 100vh;
   transition: background-color 0.3s, color 0.3s;
-  background-color: var(--bg-light);
-  color: var(--text-light);
 }
 
 .dark-mode {
-  background-color: var(--bg-dark);
-  color: var(--text-dark);
+  background-color: #1a1a1a;
+  color: #f0f0f0;
 }
 
 header {
-  text-align: center;
-  margin-bottom: 30px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 0;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+  gap: 15px;
 }
 
 h1 {
-  font-size: 1.8rem;
   margin: 0;
+  font-size: 1.8rem;
+  flex-grow: 1;
+  text-align: center;
 }
 
-.theme-toggle {
-  padding: 8px 12px;
-  font-size: 1rem;
-  background-color: transparent;
-  border: 1px solid currentColor;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: opacity 0.3s;
-}
-
-.theme-toggle:hover {
-  opacity: 0.8;
+.header-controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 button {
-  padding: 12px 20px;
-  background-color: var(--primary-color);
-  color: white;
+  padding: 10px 15px;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  margin-top: 10px;
-  transition: opacity 0.3s;
-  font-size: 1rem;
   font-weight: bold;
+  transition: all 0.3s ease;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
 button:hover {
-  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
-button:disabled {
-  background-color: #cccccc;
-  cursor: not-allowed;
+button:active {
+  transform: translateY(0);
 }
 
-.dark-mode button:disabled {
-  background-color: #666;
-}
-
-.correct {
-  background-color: var(--correct-color);
-  color: var(--text-light);
-}
-
-.dark-mode .correct {
-  background-color: var(--correct-dark);
-  color: var(--text-dark);
-}
-
-.incorrect {
-  background-color: var(--error-color);
-  color: white;
-}
-
-.dark-mode .incorrect {
-  background-color: var(--error-dark);
+.theme-toggle {
+  background-color: transparent;
+  border: 1px solid currentColor;
+  padding: 8px 12px;
 }
 
 .finish-btn {
-  background-color: var(--error-color);
+  background-color: #f44336;
+  color: white;
+  min-width: 120px;
+  justify-content: center;
+}
+
+.stats-btn {
+  background-color: #2196F3;
+  color: white;
+  min-width: 120px;
+  justify-content: center;
 }
 
 .dark-mode .finish-btn {
-  background-color: var(--error-dark);
+  background-color: #c62828;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
 }
 
-.restart-btn {
-  background-color: var(--primary-color);
+.dark-mode .stats-btn {
+  background-color: #1565C0;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
 }
 
-.dark-mode .restart-btn {
-  background-color: var(--primary-dark);
+.dark-mode .theme-toggle {
+  border-color: #f0f0f0;
 }
 
-.info-btn {
-  background-color: var(--info-color);
-}
-
-.dark-mode .info-btn {
-  background-color: var(--info-dark);
-}
-
-/* Мобильная адаптация */
 @media (max-width: 600px) {
   .app {
-    padding: 10px;
+    padding: 15px;
   }
 
   h1 {
     font-size: 1.5rem;
+    margin-bottom: 10px;
+    order: -1;
+    width: 100%;
   }
 
-  header {
-    flex-direction: column;
-    gap: 10px;
-    margin-bottom: 20px;
-  }
-
-  .theme-toggle {
-    align-self: flex-end;
-    padding: 6px 10px;
+  .header-controls {
+    width: 100%;
+    justify-content: space-between;
+    gap: 8px;
   }
 
   button {
-    padding: 12px;
-    font-size: 1rem;
+    padding: 8px 10px;
+    font-size: 0.85rem;
+    flex-grow: 1;
+    min-width: unset;
+  }
+
+  .theme-toggle {
+    flex-grow: 0;
+    padding: 6px 8px;
+  }
+}
+
+@media (max-width: 400px) {
+  .header-controls {
+    flex-direction: column;
+  }
+
+  button {
     width: 100%;
   }
 }

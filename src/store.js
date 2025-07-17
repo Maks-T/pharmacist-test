@@ -13,6 +13,8 @@ export const store = () => {
     const showAnswerResult = ref(false)
     const darkMode = ref(localStorage.getItem('darkMode') === 'true' || false)
     const modalImage = ref(null)
+    const showStats = ref(false);
+
 
     // Статистика
     const stats = ref(JSON.parse(localStorage.getItem('pharmaTestStats')) || {})
@@ -79,7 +81,7 @@ export const store = () => {
     // Обновить статистику
     const updateStats = (questionId, isCorrect) => {
         if (!stats.value[questionId]) {
-            stats.value[questionId] = {total: 0, correct: 0}
+            stats.value[questionId] = { total: 0, correct: 0 }
         }
 
         stats.value[questionId].total++
@@ -140,7 +142,7 @@ export const store = () => {
 
     // Показать изображение
     const showImage = (id) => {
-        modalImage.value = `/images/${id}`
+        modalImage.value = `./images/${id}`
     }
 
     // Закрыть модальное окно
@@ -179,6 +181,8 @@ export const store = () => {
         saveProgress()
     }
 
+
+
     return {
         currentMode,
         currentQuestionIndex,
@@ -200,6 +204,16 @@ export const store = () => {
         closeModal,
         currentQuestion,
         shuffledAnswers,
-        finishTest
+        finishTest,
+        showStats,
+
+        showStatsModal: () => {
+            console.log('Opening stats modal', stats.value)
+            showStats.value = true
+        },
+
+        closeStatsModal: () => {
+            showStats.value = false
+        },
     }
 }
