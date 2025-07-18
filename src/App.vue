@@ -1,7 +1,10 @@
 <template>
   <div class="app" :class="{ 'dark-mode': darkMode }">
     <header>
-      <h1>Тестирование фармацевта</h1>
+      <h1>
+       Тестирование фармацевта
+      </h1>
+      <span class="total-questions">(всего вопросов: {{ totalQuestionsCount }})</span>
       <div class="header-controls">
         <button
             v-if="testStarted && !testFinished"
@@ -22,6 +25,10 @@
           {{ darkMode ? '☀️' : '🌙' }}
         </button>
       </div>
+
+<!--      <div v-if="testStarted" class="questions-counter">
+        Вопрос {{ currentQuestionIndex + 1 }} из {{ shuffledQuestions.length }}
+      </div>-->
     </header>
 
     <main>
@@ -50,6 +57,24 @@
           @finish="finishTest"
       />
     </main>
+
+    <footer class="app-footer">
+      <div class="footer-content">
+        <span style="color: #036cdb;">Разработано Максим Цацура</span>
+        <div class="footer-links">
+          <a href="https://t.me/maxim_tsatsura" target="_blank" rel="noopener" title="Telegram">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.03-.08.05-.17-.05-.25s-.34-.04-.48-.03c-.2.03-3.39 2.14-4.82 3.06-.5.33-.95.5-1.36.49-.45-.01-1.33-.26-1.98-.47-.8-.26-1.44-.4-1.38-.84.03-.22.32-.45.9-.68 3.47-1.49 5.78-2.51 8.56-3.86.63-.3 1.25-.45 1.88-.46.2 0 .63.03.73.36.1.33.07 1.02.07 1.02z"/>
+            </svg>
+          </a>
+          <a href="https://www.linkedin.com/in/maksim-tsatsura-17676a238/" target="_blank" rel="noopener" title="LinkedIn">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.79M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </footer>
 
     <!-- Модальное окно статистики -->
     <StatsModal
@@ -119,7 +144,9 @@ export default {
 
       // Вычисляемые свойства
       currentQuestion,
-      shuffledAnswers
+      shuffledAnswers,
+
+      totalQuestionsCount
     } = store()
 
     const hasStatistics = computed(() => {
@@ -166,7 +193,8 @@ export default {
       // Вычисляемые свойства
       currentQuestion,
       shuffledAnswers,
-      hasStatistics
+      hasStatistics,
+      totalQuestionsCount
     }
   }
 }
@@ -192,7 +220,7 @@ header {
   align-items: center;
   margin-bottom: 30px;
   flex-wrap: wrap;
-  gap: 15px;
+  gap: 5px;
 }
 
 h1 {
@@ -200,6 +228,7 @@ h1 {
   font-size: 1.8rem;
   flex-grow: 1;
   text-align: center;
+  font-weight: 500;
 }
 
 .header-controls {
@@ -268,12 +297,12 @@ button:active {
 
 @media (max-width: 600px) {
   .app {
-    padding: 15px;
+    padding: 5px;
   }
 
   h1 {
-    font-size: 1.5rem;
-    margin-bottom: 10px;
+    font-size: 1.2rem;
+    margin-bottom: 5px;
     order: -1;
     width: 100%;
   }
@@ -296,7 +325,7 @@ button:active {
     padding: 6px 8px;
   }
 }
-
+/*
 @media (max-width: 400px) {
   .header-controls {
     flex-direction: column;
@@ -304,6 +333,78 @@ button:active {
 
   button {
     width: 100%;
+  }
+}*/
+
+.questions-counter {
+  font-size: 0.8rem;
+  color: #666;
+  text-align: center;
+  width: 100%;
+  margin-top: 5px;
+}
+
+.dark-mode .questions-counter {
+  color: #aaa;
+}
+.app-footer {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.dark-mode .app-footer {
+  border-top-color: #444;
+}
+
+.footer-content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+}
+
+.footer-links {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.footer-links a {
+  color: #666;
+  text-decoration: none;
+  transition: color 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dark-mode .footer-links a {
+  color: #aaa;
+}
+
+.footer-links a:hover {
+  color: #2196F3;
+}
+
+.dark-mode .footer-links a:hover {
+  color: #64B5F6;
+}
+
+.total-questions {
+  color: #aaa;
+  font-size: 0.6rem;
+}
+
+@media (max-width: 600px) {
+  .app-footer {
+    font-size: 0.8rem;
+  }
+
+  .footer-links {
+    gap: 15px;
   }
 }
 </style>

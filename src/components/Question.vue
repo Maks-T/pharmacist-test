@@ -137,6 +137,8 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
+
+
 }
 
 .image-button {
@@ -148,6 +150,11 @@ export default {
   justify-content: center;
   font-weight: bold;
   background-color: #2196F3;
+
+  border: none;
+  outline: none;
+
+  color: white
 }
 
 .answers {

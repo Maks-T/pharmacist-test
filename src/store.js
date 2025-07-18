@@ -181,7 +181,7 @@ export const store = () => {
         saveProgress()
     }
 
-
+    const totalQuestionsCount = computed(() => questions.length)
 
     return {
         currentMode,
@@ -215,5 +215,7 @@ export const store = () => {
         closeStatsModal: () => {
             showStats.value = false
         },
+
+        totalQuestionsCount
     }
 }
