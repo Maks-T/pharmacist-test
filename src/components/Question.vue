@@ -12,7 +12,7 @@
       </button>
     </div>
 
-    <p>{{ question.question }}</p>
+    <p class="question-text">{{ question.question }}</p>
 
     <div class="answers">
       <div
@@ -72,11 +72,9 @@
       >
         Далее
       </button>
-
     </div>
   </div>
 </template>
-
 
 <script>
 export default {
@@ -121,343 +119,350 @@ export default {
 }
 </script>
 
-<style>
+<style lang="scss">
+@import './../index.scss';
+
 .question {
   background-color: var(--question-bg, #f9f9f9);
-  padding: 20px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-}
+  padding: rem(20);
+  border-radius: rem(8);
+  margin-bottom: rem(20);
 
-.dark-mode .question {
-  --question-bg: #2d2d2d;
-}
+  .dark-mode & {
+    --question-bg: #2d2d2d;
+  }
 
-.question-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  &-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
 
+  &-text {
+    margin: rem(15) 0;
+    padding: rem(15);
+    background-color: var(--question-text-bg, #f8f8f8);
+    border-left: rem(4) solid var(--question-text-border, #2196F3);
+    border-radius: 0 rem(8) rem(8) 0;
+    font-size: rem(18);
+    line-height: 1.5;
+    position: relative;
+    box-shadow: 0 rem(2) rem(5) rgba(0, 0, 0, 0.05);
+
+    // Для темной темы
+    .dark-mode & {
+      --question-text-bg: #2d2d2d;
+      --question-text-border: #64B5F6;
+    }
+
+    // Декоративный элемент
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, rgba(33, 150, 243, 0.1), transparent);
+      border-radius: rem(4) 0 0 rem(4);
+    }
+  }
 
 }
 
 .image-button {
-  width: 30px;
-  height: 30px;
+  width: rem(30);
+  height: rem(30);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: bold;
   background-color: #2196F3;
-
   border: none;
   outline: none;
-
-  color: white
+  color: white;
+  flex-shrink: 0;
+  flex-grow: 0;
 }
 
 .answers {
-  margin: 20px 0;
+  margin: rem(20) 0;
 }
 
 .answer {
-  margin: 10px 0;
-  padding: 10px;
+  margin: rem(10) 0;
+  padding: rem(10);
   background-color: var(--answer-bg, #fff);
-  border-radius: 4px;
+  border-radius: rem(4);
   transition: background-color 0.3s;
-}
+  position: relative;
+  overflow: hidden;
 
-.dark-mode .answer {
-  --answer-bg: #3d3d3d;
-}
+  .dark-mode & {
+    --answer-bg: #3d3d3d;
+  }
 
-label {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-}
+  label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding-right: rem(25);
+    transition: all 0.3s ease;
+  }
 
-input[type="radio"],
-input[type="checkbox"] {
-  margin-right: 10px;
+  input[type="radio"],
+  input[type="checkbox"] {
+    margin-right: rem(10);
+  }
+
+  input:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+
+    .correct &, .incorrect & {
+      opacity: 1;
+    }
+  }
+
+  &.correct {
+    background-color: #C8E6C9;
+    border-left: rem(4) solid #4CAF50;
+    animation: fadeIn 0.5s ease;
+
+    &::before {
+      content: "✓";
+      position: absolute;
+      right: rem(10);
+      color: #4CAF50;
+      font-size: rem(18);
+    }
+
+    .dark-mode & {
+      background-color: #1B5E20;
+      border-left-color: #81C784;
+
+      &::before {
+        color: #81C784;
+      }
+    }
+  }
+
+  &.incorrect {
+    background-color: #FFCDD2;
+    border-left: rem(4) solid #F44336;
+    animation: fadeIn 0.5s ease;
+
+    &::before {
+      content: "✖";
+      position: absolute;
+      right: rem(10);
+      color: #F44336;
+      font-size: rem(18);
+    }
+
+    label::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 50%;
+      width: 100%;
+      height: rem(2);
+      background-color: #f44336;
+      transform: translateY(-50%) scaleX(0);
+      transform-origin: left;
+      animation: strikeThrough 0.5s ease forwards;
+    }
+
+    .dark-mode & {
+      background-color: #4d2f2f;
+      border-left-color: #EF9A9A;
+
+      &::before {
+        color: #EF9A9A;
+      }
+
+      label::after {
+        background-color: #EF9A9A;
+      }
+    }
+  }
 }
 
 .result-feedback {
-  margin: 20px 0;
-  padding: 15px;
-  border-radius: 4px;
-  background-color: var(--result-bg, #f0f0f0);
-}
+  margin: rem(10) 0;
+  padding: rem(10);
+  border-radius: rem(8);
+  background-color: var(--result-bg, #FFF3E0); // Светло-оранжевый фон
+  animation: fadeIn 0.5s ease;
+  box-shadow: 0 rem(2) rem(8) rgba(0, 0, 0, 0.1);
 
-.dark-mode .result-feedback {
-  --result-bg: #333333;
+  // Темная тема
+  .dark-mode & {
+    --result-bg: #332821;
+    --correct-text: #FFB74D; // Светло-оранжевый
+    --incorrect-text: #EF9A9A;
+    --correct-bg: #4E342E; // Темно-коричневый
+  }
+
+  p {
+    margin-bottom: rem(15);
+    font-size: rem(18);
+    font-weight: bold;
+    line-height: 1.4;
+
+    &.correct {
+      color: #FF9800; // Основной оранжевый
+      .dark-mode & {
+        color: var(--correct-text);
+      }
+    }
+
+    &.incorrect {
+      color: #E53935; // Ярко-красный
+      .dark-mode & {
+        color: var(--incorrect-text);
+      }
+    }
+  }
+
+  > p:not(.correct):not(.incorrect) {
+    color: #5D4037; // Темно-коричневый
+    font-weight: normal;
+    .dark-mode & {
+      color: #D7CCC8; // Светло-бежевый
+    }
+  }
+
+  ul {
+    list-style-type: none;
+    padding: 0;
+    margin-top: rem(15);
+  }
+
+  li {
+    padding: rem(10) rem(15);
+    margin: rem(8) 0;
+    border-radius: rem(6);
+    background-color: #FFE0B2; // Светло-оранжевый
+    color: #BF360C; // Темно-оранжевый
+    font-weight: 500;
+    transition: transform 0.2s ease;
+
+    &:hover {
+      transform: translateX(rem(5));
+    }
+
+    .dark-mode & {
+      background-color: var(--correct-bg);
+      color: var(--correct-text);
+    }
+
+    @include respond(sm) {
+      padding: rem(8) rem(12);
+    }
+  }
+
+  @include respond(sm) {
+    padding: rem(15);
+    margin: rem(15) 0;
+  }
 }
 
 .actions {
   display: flex;
-  justify-content: flex-end;
-}
+  gap: rem(12);
+  margin-top: rem(25);
+  justify-content: center;
 
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-
-li {
-  padding: 5px 10px;
-  margin: 5px 0;
-  border-radius: 4px;
-}
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: space-between;
-}
-
-.actions button {
-  flex: 1;
-  min-width: 120px;
-}
-
-.finish-btn {
-  background-color: #f44336;
-}
-
-.dark-mode .finish-btn {
-  background-color: #c62828;
-}
-
-/* Мобильные стили */
-@media (max-width: 600px) {
-  .actions {
+  @include respond('sm') {
     flex-direction: column;
+    gap: rem(10);
   }
 
-  .actions button {
-    width: 100%;
-  }
-}
-.actions {
-  display: flex;
-  gap: 12px;
-  margin-top: 25px;
-  justify-content: center;
-}
+  button {
+    padding: rem(12) rem(24);
+    border: none;
+    border-radius: rem(8);
+    font-size: rem(16);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: rem(150);
 
-.answer-btn, .next-btn {
-  padding: 12px 24px;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 150px;
+    @include respond('sm') {
+      width: 100%;
+      padding: rem(14);
+      font-size: rem(16.8);
+    }
+
+    &:active {
+      animation: buttonPress 0.3s ease;
+    }
+  }
 }
 
 .answer-btn {
   background-color: #4CAF50;
   color: white;
-  box-shadow: 0 3px 6px rgba(76, 175, 80, 0.2);
-}
+  box-shadow: 0 rem(3) rem(6) rgba(76, 175, 80, 0.2);
 
-.answer-btn:hover {
-  background-color: #43A047;
-  transform: translateY(-2px);
-  box-shadow: 0 5px 10px rgba(76, 175, 80, 0.3);
-}
+  &:hover {
+    background-color: #43A047;
+    transform: translateY(rem(-2));
+    box-shadow: 0 rem(5) rem(10) rgba(76, 175, 80, 0.3);
+  }
 
-.answer-btn:active {
-  transform: translateY(0);
-}
+  &:active {
+    transform: translateY(0);
+  }
 
-.answer-btn:disabled {
-  background-color: #A5D6A7;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
+  &:disabled {
+    background-color: #A5D6A7;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  .dark-mode & {
+    background-color: #2E7D32;
+
+    &:hover {
+      background-color: #1B5E20;
+    }
+  }
 }
 
 .next-btn {
   background-color: #2196F3;
   color: white;
-  box-shadow: 0 3px 6px rgba(33, 150, 243, 0.2);
-}
+  box-shadow: 0 rem(3) rem(6) rgba(33, 150, 243, 0.2);
 
-.next-btn:hover {
-  background-color: #1E88E5;
-  transform: translateY(-2px);
-  box-shadow: 0 5px 10px rgba(33, 150, 243, 0.3);
-}
-
-.next-btn:active {
-  transform: translateY(0);
-}
-
-/* Темная тема */
-.dark-mode .answer-btn {
-  background-color: #2E7D32;
-}
-
-.dark-mode .answer-btn:hover {
-  background-color: #1B5E20;
-}
-
-.dark-mode .next-btn {
-  background-color: #1565C0;
-}
-
-.dark-mode .next-btn:hover {
-  background-color: #0D47A1;
-}
-
-/* Адаптация для мобильных */
-@media (max-width: 600px) {
-  .actions {
-    flex-direction: column;
-    gap: 10px;
+  &:hover {
+    background-color: #1E88E5;
+    transform: translateY(rem(-2));
+    box-shadow: 0 rem(5) rem(10) rgba(33, 150, 243, 0.3);
   }
 
-  .answer-btn, .next-btn {
-    width: 100%;
-    padding: 14px;
-    font-size: 1.05rem;
+  &:active {
+    transform: translateY(0);
+  }
+
+  .dark-mode & {
+    background-color: #1565C0;
+
+    &:hover {
+      background-color: #0D47A1;
+    }
   }
 }
 
-/* Анимация при нажатии */
-@keyframes buttonPress {
-  0% { transform: scale(1); }
-  50% { transform: scale(0.95); }
-  100% { transform: scale(1); }
-}
-
-.answer-btn:active, .next-btn:active {
-  animation: buttonPress 0.3s ease;
-}
-.answer.correct {
-  background-color: #C8E6C9; /* Светло-зеленый для правильных */
-  border-left: 4px solid #4CAF50;
-  animation: fadeIn 0.5s ease;
-}
-
-.answer.incorrect {
-  background-color: #FFCDD2; /* Светло-красный для неправильных */
-  border-left: 4px solid #F44336;
-  animation: fadeIn 0.5s ease;
-}
-
-.dark-mode .answer.correct {
-  background-color: #1B5E20; /* Темно-зеленый для темной темы */
-  border-left-color: #81C784;
-}
-
-.dark-mode .answer.incorrect {
-  background-color: #B71C1C; /* Темно-красный для темной темы */
-  border-left-color: #E57373;
-}
-
-/* Стили для текста в ответах */
-.answer.correct label,
-.answer.incorrect label {
-  color: #000;
-}
-
-.dark-mode .answer.correct label,
-.dark-mode .answer.incorrect label {
-  color: #fff;
-}
-
-/* Анимация появления */
 @keyframes fadeIn {
-  from { opacity: 0.5; transform: translateX(-10px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-
-/* Стили для правильных ответов в блоке результата */
-.result-feedback .correct {
-  background-color: #E8F5E9;
-  padding: 8px 12px;
-  border-radius: 4px;
-  margin: 5px 0;
-}
-
-.dark-mode .result-feedback .correct {
-  background-color: #1B5E20;
-  color: #fff;
-}
-
-/* Стили для текста результата */
-.result-feedback p.correct {
-  color: #2E7D32;
-  font-weight: bold;
-  font-size: 1.1rem;
-}
-
-.result-feedback p.incorrect {
-  color: #C62828;
-  font-weight: bold;
-  font-size: 1.1rem;
-}
-
-.dark-mode .result-feedback p.correct {
-  color: #81C784;
-}
-
-.dark-mode .result-feedback p.incorrect {
-  color: #EF9A9A;
-}
-
-/* Улучшенные стили для списка правильных ответов */
-.result-feedback ul {
-  margin-top: 10px;
-}
-
-.result-feedback li {
-  margin: 8px 0;
-  padding: 10px;
-  background-color: #E8F5E9;
-  border-radius: 4px;
-}
-
-.dark-mode .result-feedback li {
-  background-color: #2E7D32;
-  color: #fff;
-}
-
-/* Стили для инпутов в режиме результата */
-.answer input:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
-
-.answer.correct input:disabled,
-.answer.incorrect input:disabled {
-  opacity: 1;
-}
-
-/* Стили для зачеркивания неправильных ответов */
-.answer.incorrect label {
-  position: relative;
-}
-
-.answer.incorrect label::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 50%;
-  width: 100%;
-  height: 2px;
-  background-color: #f44336;
-  transform: translateY(-50%) scaleX(0);
-  transform-origin: left;
-  animation: strikeThrough 0.5s ease forwards;
+  from { opacity: 0; transform: translateY(rem(-10)); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes strikeThrough {
@@ -466,103 +471,9 @@ li {
   }
 }
 
-.dark-mode .answer.incorrect label::after {
-  background-color: #ef9a9a;
-}
-
-/* Улучшенные стили для неправильных ответов */
-.answer.incorrect {
-  background-color: #ffebee; /* Светло-красный фон */
-  border-left: 4px solid #f44336;
-  position: relative;
-  overflow: hidden;
-}
-
-.answer.incorrect::before {
-  content: "✖";
-  position: absolute;
-  right: 10px;
-  color: #f44336;
-  font-size: 1.2rem;
-}
-
-.dark-mode .answer.incorrect {
-  background-color: #4d2f2f; /* Темный красный фон */
-  border-left-color: #ef9a9a;
-}
-
-.dark-mode .answer.incorrect::before {
-  color: #ef9a9a;
-}
-
-/* Стили для правильных ответов */
-.answer.correct {
-  background-color: #e8f5e9; /* Светло-зеленый фон */
-  border-left: 4px solid #4caf50;
-  position: relative;
-}
-
-.answer.correct::before {
-  content: "✓";
-  position: absolute;
-  right: 10px;
-  color: #4caf50;
-  font-size: 1.2rem;
-}
-
-.dark-mode .answer.correct {
-  background-color: #2d3e2d; /* Темный зеленый фон */
-  border-left-color: #81c784;
-}
-
-.dark-mode .answer.correct::before {
-  color: #81c784;
-}
-
-/* Анимации */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.answer.correct,
-.answer.incorrect {
-  animation: fadeIn 0.4s ease forwards;
-}
-
-/* Улучшенные стили для текста */
-.answer label {
-  padding-right: 25px; /* Место для иконки */
-  transition: all 0.3s ease;
-}
-
-/* Стили для блоков результата */
-.result-feedback {
-  border-radius: 8px;
-  padding: 20px;
-  margin-top: 20px;
-  animation: fadeIn 0.5s ease;
-}
-
-.result-feedback p.correct {
-  color: #2e7d32;
-  font-weight: bold;
-  font-size: 1.2rem;
-  margin-bottom: 15px;
-}
-
-.result-feedback p.incorrect {
-  color: #c62828;
-  font-weight: bold;
-  font-size: 1.2rem;
-  margin-bottom: 15px;
-}
-
-.dark-mode .result-feedback p.correct {
-  color: #81c784;
-}
-
-.dark-mode .result-feedback p.incorrect {
-  color: #ef9a9a;
+@keyframes buttonPress {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.95); }
+  100% { transform: scale(1); }
 }
 </style>

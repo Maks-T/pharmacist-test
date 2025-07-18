@@ -1,5 +1,5 @@
-import {ref, computed} from 'vue'
-import questions from './data/questions.json'
+import { ref, computed } from 'vue'
+import questionsData from './data/questions.json'
 
 export const store = () => {
     // Состояние
@@ -13,27 +13,60 @@ export const store = () => {
     const showAnswerResult = ref(false)
     const darkMode = ref(localStorage.getItem('darkMode') === 'true' || false)
     const modalImage = ref(null)
-    const showStats = ref(false);
-
-
-    // Статистика
+    const showStats = ref(false)
     const stats = ref(JSON.parse(localStorage.getItem('pharmaTestStats')) || {})
+    const questions = ref(questionsData)
 
-    // Получить вопросы
+    // Получить вопросы для выбранного режима
     const getQuestionsForMode = (mode) => {
-        if (mode === 'order') {
-            return [...questions]
-        } else {
-            const shuffled = [...questions].sort(() => 0.5 - Math.random())
-            return shuffled.slice(0, 20)
+        switch (mode) {
+            case 'order':
+                return [...questions.value] // Все вопросы по порядку
+            case 'random-20':
+                return getWeightedRandomQuestions(20) // 20 случайных вопросов
+            case 'random-10':
+                return getWeightedRandomQuestions(10) // 10 случайных вопросов
+            default:
+                return [...questions.value]
         }
+    }
+
+    // Получить взвешенный случайный список вопросов
+    const getWeightedRandomQuestions = (count) => {
+        const scoredQuestions = questions.value.map(question => {
+            const questionStats = stats.value[question.id] || { total: 0, correct: 0 }
+            const total = questionStats.total
+            const incorrect = total - questionStats.correct
+
+            // Логика оценки:
+            // 1. Приоритет неотвеченным вопросам
+            // 2. Больший вес вопросам с ошибками
+            // 3. Предпочтение реже задаваемым вопросам
+            // 4. Небольшой случайный фактор
+            const score =
+                (total === 0 ? 100 : 0) +
+                (incorrect * 10) +
+                (total === 0 ? 0 : 50 / (total + 1)) +
+                (Math.random() * 5)
+
+            return { question, score }
+        })
+
+        // Сортировка по оценке и выбор нужного количества
+        scoredQuestions.sort((a, b) => b.score - a.score)
+        return scoredQuestions.slice(0, count).map(item => item.question)
     }
 
     // Начать тест
     const startTest = (mode) => {
         currentMode.value = mode
         shuffledQuestions.value = getQuestionsForMode(mode)
+        currentQuestionIndex.value = 0
+        selectedAnswers.value = []
+        results.value = []
         testStarted.value = true
+        testFinished.value = false
+        showAnswerResult.value = false
         saveProgress()
     }
 
@@ -93,12 +126,10 @@ export const store = () => {
     }
 
     // Сохранить прогресс
-
     const saveProgress = () => {
         const progress = {
             mode: currentMode.value,
             index: currentQuestionIndex.value,
-            // Сохраняем только ID вопросов и ответов
             questionIds: shuffledQuestions.value.map(q => q.id),
             results: results.value.map(r => ({
                 questionId: r.questionId,
@@ -108,30 +139,26 @@ export const store = () => {
             finished: testFinished.value,
             showAnswerResult: showAnswerResult.value,
             darkMode: darkMode.value
-        };
-        localStorage.setItem('pharmaTestProgress', JSON.stringify(progress));
-    };
+        }
+        localStorage.setItem('pharmaTestProgress', JSON.stringify(progress))
+    }
 
     // Восстановить прогресс
     const restoreProgress = () => {
-        const progress = JSON.parse(localStorage.getItem('pharmaTestProgress'));
+        const progress = JSON.parse(localStorage.getItem('pharmaTestProgress'))
         if (progress) {
-            currentMode.value = progress.mode;
-            currentQuestionIndex.value = progress.index;
-
-            // Восстанавливаем вопросы из исходного списка по ID
+            currentMode.value = progress.mode
+            currentQuestionIndex.value = progress.index
             shuffledQuestions.value = progress.questionIds
-                .map(id => questions.find(q => q.id === id))
-                .filter(q => q !== undefined);
-
-            // Восстанавливаем результаты
-            results.value = progress.results || [];
-            testFinished.value = progress.finished;
-            showAnswerResult.value = progress.showAnswerResult || false;
-            darkMode.value = progress.darkMode || false;
-            testStarted.value = true;
+                .map(id => questions.value.find(q => q.id === id))
+                .filter(q => q !== undefined)
+            results.value = progress.results || []
+            testFinished.value = progress.finished
+            showAnswerResult.value = progress.showAnswerResult || false
+            darkMode.value = progress.darkMode || false
+            testStarted.value = true
         }
-    };
+    }
 
     // Переключить тему
     const toggleDarkMode = () => {
@@ -152,12 +179,35 @@ export const store = () => {
 
     // Перезапустить тест
     const restartTest = () => {
+        if (currentMode.value) {
+            shuffledQuestions.value = getQuestionsForMode(currentMode.value)
+        }
         currentQuestionIndex.value = 0
         selectedAnswers.value = []
         results.value = []
         testFinished.value = false
         showAnswerResult.value = false
         saveProgress()
+    }
+
+    // Завершить тест
+    const finishTest = () => {
+        testStarted.value = false
+        testFinished.value = false
+        currentQuestionIndex.value = 0
+        selectedAnswers.value = []
+        results.value = []
+        showAnswerResult.value = false
+        saveProgress()
+    }
+
+    // Показать статистику
+    const showStatsModal = () => {
+        showStats.value = true
+    }
+
+    const closeStatsModal = () => {
+        showStats.value = false
     }
 
     // Текущий вопрос
@@ -171,17 +221,21 @@ export const store = () => {
         return [...currentQuestion.value.answers].sort(() => 0.5 - Math.random())
     })
 
-    const finishTest = () => {
-        testStarted.value = false
-        testFinished.value = false
-        currentQuestionIndex.value = 0
-        selectedAnswers.value = []
-        results.value = []
-        showAnswerResult.value = false
-        saveProgress()
-    }
+    // Количество вопросов в текущем тесте
+    const currentTestQuestionsCount = computed(() => {
+        return shuffledQuestions.value.length
+    })
 
-    const totalQuestionsCount = computed(() => questions.length)
+    // Общее количество вопросов
+    const totalQuestionsCount = computed(() => questions.value.length)
+
+    // Прогресс теста
+    const testProgress = computed(() => {
+        return {
+            current: currentQuestionIndex.value + 1,
+            total: currentTestQuestionsCount.value
+        }
+    })
 
     return {
         currentMode,
@@ -194,6 +248,8 @@ export const store = () => {
         showAnswerResult,
         darkMode,
         modalImage,
+        showStats,
+        questions,
         startTest,
         answerQuestion,
         nextQuestion,
@@ -202,20 +258,13 @@ export const store = () => {
         toggleDarkMode,
         showImage,
         closeModal,
+        finishTest,
+        showStatsModal,
+        closeStatsModal,
         currentQuestion,
         shuffledAnswers,
-        finishTest,
-        showStats,
-
-        showStatsModal: () => {
-            console.log('Opening stats modal', stats.value)
-            showStats.value = true
-        },
-
-        closeStatsModal: () => {
-            showStats.value = false
-        },
-
-        totalQuestionsCount
+        totalQuestionsCount,
+        currentTestQuestionsCount,
+        testProgress
     }
 }

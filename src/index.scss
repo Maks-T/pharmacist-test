@@ -1,0 +1,42 @@
+@use "sass:math";
+
+// Percent
+@function percent($px, $from) {
+  @return math.div($px, $from) * 100%;
+}
+// Px to rem
+@function rem($px) {
+  @if (type-of($px) != number) {
+    @return $px;
+  }
+  @return math.div($px, 16) + rem;
+}
+
+
+$breakpoints-xs: 350;
+$breakpoints-sm: 767;
+$breakpoints-md: 1023;
+$breakpoints-lg: 1439;
+$breakpoints-xl: 1599;
+$breakpoints-xxl: 1919;
+$breakpoints-3xl: 2560;
+
+@mixin respond($breakpoint: 'old-phone', $rule: 'max-width') {
+  @if $breakpoint == "old-phone" or $breakpoint == "old-mobile" or $breakpoint == "xs" {
+    @media only screen and (#{$rule}: #{$breakpoints-xs}px) { @content; }
+  } @else if $breakpoint == "phone" or $breakpoint == "mobile" or $breakpoint == "sm" {
+    @media only screen and (#{$rule}: #{$breakpoints-sm}px) { @content; }
+  } @else if $breakpoint == "phone-land" or $breakpoint == "md" {
+    @media only screen and (#{$rule}: #{$breakpoints-md}px) { @content; }
+  } @else if $breakpoint == "tab-port" or $breakpoint == "lg" {
+    @media only screen and (#{$rule}: #{$breakpoints-lg}px) { @content; }
+  } @else if $breakpoint == "desktop" or $breakpoint == "xl" {
+    @media only screen and (#{$rule}: #{$breakpoints-xl}px) { @content; }
+  } @else if $breakpoint == "xxl" {
+    @media only screen and (#{$rule}: #{$breakpoints-xxl}px) { @content; }
+  } @else if $breakpoint == "3xl" {
+    @media only screen and (#{$rule}: #{$breakpoints-3xl}px) { @content; }
+  } @else {
+    @media only screen and (#{$rule}: #{$breakpoint}px) { @content; }
+  }
+}

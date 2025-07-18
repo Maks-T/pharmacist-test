@@ -1,10 +1,8 @@
 <template>
   <div class="app" :class="{ 'dark-mode': darkMode }">
     <header>
-      <h1>
-       Тестирование фармацевта
-      </h1>
-      <span class="total-questions">(всего вопросов: {{ totalQuestionsCount }})</span>
+      <h1>Тестирование фармацевта</h1>
+      <span class="total-questions" @click="showQuestionsListModal">Все вопросы: {{ totalQuestionsCount }}</span>
       <div class="header-controls">
         <button
             v-if="testStarted && !testFinished"
@@ -20,15 +18,10 @@
         >
           📊 Статистика ({{ Object.keys(stats).length }})
         </button>
-
         <button @click="toggleDarkMode" class="theme-toggle">
           {{ darkMode ? '☀️' : '🌙' }}
         </button>
       </div>
-
-<!--      <div v-if="testStarted" class="questions-counter">
-        Вопрос {{ currentQuestionIndex + 1 }} из {{ shuffledQuestions.length }}
-      </div>-->
     </header>
 
     <main>
@@ -36,7 +29,6 @@
           v-if="!testStarted && !testFinished"
           @start-test="startTest"
       />
-
       <Question
           v-else-if="!testFinished"
           :question="currentQuestion"
@@ -48,7 +40,6 @@
           @next="nextQuestion"
           @show-image="showImage"
       />
-
       <Results
           v-else
           :results="results"
@@ -60,18 +51,18 @@
 
     <footer class="app-footer">
       <div class="footer-content">
-        <span style="color: #036cdb;">Разработано Максим Цацура</span>
+        <span class="developer-name">Разработано: <span>Максим Цацура</span></span>
         <div class="footer-links">
-          <a href="https://t.me/maxim_tsatsura" target="_blank" rel="noopener" title="Telegram">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.03-.08.05-.17-.05-.25s-.34-.04-.48-.03c-.2.03-3.39 2.14-4.82 3.06-.5.33-.95.5-1.36.49-.45-.01-1.33-.26-1.98-.47-.8-.26-1.44-.4-1.38-.84.03-.22.32-.45.9-.68 3.47-1.49 5.78-2.51 8.56-3.86.63-.3 1.25-.45 1.88-.46.2 0 .63.03.73.36.1.33.07 1.02.07 1.02z"/>
-            </svg>
-          </a>
-          <a href="https://www.linkedin.com/in/maksim-tsatsura-17676a238/" target="_blank" rel="noopener" title="LinkedIn">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.79M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/>
-            </svg>
-          </a>
+          <SocialLink
+              url="https://t.me/maxim_tsatsura"
+              title="Telegram"
+              icon="telegram"
+          />
+          <SocialLink
+              url="https://www.linkedin.com/in/maksim-tsatsura-17676a238/"
+              title="LinkedIn"
+              icon="linkedin"
+          />
         </div>
       </div>
     </footer>
@@ -85,36 +76,46 @@
     />
 
     <!-- Модальное окно изображения -->
-    <Modal
+    <ImageModal
         v-if="modalImage"
         :image="modalImage"
         @close="closeModal"
+    />
+
+    <!-- Модальное окно списка вопросов -->
+    <QuestionsListModal
+        v-if="showQuestionsList"
+        :questions="questions"
+        @close="closeQuestionsListModal"
     />
   </div>
 </template>
 
 <script>
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import ModeSelection from './components/ModeSelection.vue'
 import Question from './components/Question.vue'
 import Results from './components/Results.vue'
-import Modal from './components/Modal.vue'
+import ImageModal from './components/ImageModal.vue'
 import StatsModal from './components/StatsModal.vue'
+import QuestionsListModal from './components/QuestionsListModal.vue'
 import { store } from './store'
+import SocialLink from "@/components/SocialLink.vue";
 
 export default {
   name: 'App',
   components: {
+    SocialLink,
     ModeSelection,
     Question,
     Results,
-    Modal,
-    StatsModal
+    ImageModal,
+    StatsModal,
+    QuestionsListModal
   },
 
   setup() {
     const {
-      // Состояние
       currentMode,
       currentQuestionIndex,
       selectedAnswers,
@@ -128,8 +129,6 @@ export default {
       showStats,
       stats,
       questions,
-
-      // Методы
       startTest,
       answerQuestion,
       nextQuestion,
@@ -141,17 +140,26 @@ export default {
       showStatsModal,
       closeStatsModal,
       restoreProgress,
-
-      // Вычисляемые свойства
       currentQuestion,
       shuffledAnswers,
-
       totalQuestionsCount
     } = store()
 
     const hasStatistics = computed(() => {
       return Object.keys(stats.value).length > 0
     })
+
+    const showQuestionsList = ref(false)
+
+    const showQuestionsListModal = () => {
+      if (questions.value && questions.value.length > 0) {
+        showQuestionsList.value = true
+      }
+    }
+
+    const closeQuestionsListModal = () => {
+      showQuestionsList.value = false
+    }
 
     const handleRestart = () => {
       restartTest()
@@ -163,7 +171,6 @@ export default {
     })
 
     return {
-      // Состояние
       currentMode,
       currentQuestionIndex,
       selectedAnswers,
@@ -177,8 +184,7 @@ export default {
       showStats,
       stats,
       questions,
-
-      // Методы
+      showQuestionsList,
       startTest,
       answerQuestion,
       nextQuestion,
@@ -189,8 +195,8 @@ export default {
       closeModal,
       showStatsModal,
       closeStatsModal,
-
-      // Вычисляемые свойства
+      showQuestionsListModal,
+      closeQuestionsListModal,
       currentQuestion,
       shuffledAnswers,
       hasStatistics,
@@ -200,211 +206,244 @@ export default {
 }
 </script>
 
-<style scoped>
-.app {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 20px;
-  min-height: 100vh;
-  transition: background-color 0.3s, color 0.3s;
+<style lang="scss">
+@import './index.scss';
+
+// Переменные
+$primary-color: #036cdb;
+$primary-dark: #0252a8;
+$error-color: #f44336;
+$error-dark: #c62828;
+$info-color: #2196F3;
+$info-dark: #1565C0;
+$text-light: #333;
+$text-dark: #f0f0f0;
+$text-secondary-light: #666;
+$text-secondary-dark: #aaa;
+$bg-light: #fff;
+$bg-dark: #1a1a1a;
+$border-light: #eee;
+$border-dark: #444;
+$shadow-light: rgba(0, 0, 0, 0.1);
+$shadow-dark: rgba(0, 0, 0, 0.3);
+
+// Миксины
+@mixin transition($properties...) {
+  transition: all 0.3s ease;
+  @each $prop in $properties {
+    transition-property: $prop;
+  }
 }
 
-.dark-mode {
-  background-color: #1a1a1a;
-  color: #f0f0f0;
+@mixin hover-effect {
+  &:hover {
+    transform: translateY(rem(-1));
+    box-shadow: 0 rem(2) rem(5) $shadow-light;
+
+    .dark-mode & {
+      box-shadow: 0 rem(2) rem(5) $shadow-dark;
+    }
+  }
+}
+
+// Основные стили
+.app {
+  max-width: rem(800);
+  margin: 0 auto;
+  padding: rem(20);
+  min-height: 100vh;
+  @include transition(background-color, color);
+
+  &.dark-mode {
+    background-color: $bg-dark;
+    color: $text-dark;
+  }
 }
 
 header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 30px;
+  margin-bottom: rem(30);
   flex-wrap: wrap;
-  gap: 5px;
+  gap: rem(5);
 }
 
 h1 {
   margin: 0;
-  font-size: 1.8rem;
+  font-size: rem(28);
   flex-grow: 1;
   text-align: center;
   font-weight: 500;
+
+  @include respond(sm) {
+    font-size: rem(20);
+    margin-bottom: rem(5);
+    order: -1;
+    width: 100%;
+  }
 }
 
 .header-controls {
   display: flex;
-  gap: 10px;
+  gap: rem(10);
   align-items: center;
   flex-wrap: wrap;
   justify-content: flex-end;
+
+  button {
+    height: rem(39);
+  }
+
+  @include respond(sm) {
+    width: 100%;
+    justify-content: space-between;
+    gap: rem(8);
+  }
 }
 
 button {
-  padding: 10px 15px;
+  padding: rem(10) rem(15);
   border: none;
-  border-radius: 4px;
+  border-radius: rem(4);
   cursor: pointer;
   font-weight: bold;
-  transition: all 0.3s ease;
-  font-size: 0.95rem;
+  @include transition;
+  font-size: rem(15);
   display: flex;
   align-items: center;
-  gap: 5px;
-}
+  gap: rem(5);
+  @include hover-effect;
 
-button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-}
+  &:active {
+    transform: translateY(0);
+  }
 
-button:active {
-  transform: translateY(0);
+  @include respond(sm) {
+    padding: rem(8) rem(10);
+    font-size: rem(14);
+    flex-grow: 1;
+    min-width: unset;
+  }
 }
 
 .theme-toggle {
   background-color: transparent;
   border: 1px solid currentColor;
-  padding: 8px 12px;
+  padding: rem(8) rem(12);
+
+  @include respond(sm) {
+    flex-grow: 0;
+    padding: rem(6) rem(8);
+  }
+
+  .dark-mode & {
+    border-color: $text-dark;
+  }
 }
 
 .finish-btn {
-  background-color: #f44336;
+  background-color: $error-color;
   color: white;
-  min-width: 120px;
+  min-width: rem(120);
   justify-content: center;
+
+  .dark-mode & {
+    background-color: $error-dark;
+  }
 }
 
 .stats-btn {
-  background-color: #2196F3;
+  background-color: $info-color;
   color: white;
-  min-width: 120px;
+  min-width: rem(120);
   justify-content: center;
-}
 
-.dark-mode .finish-btn {
-  background-color: #c62828;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-}
-
-.dark-mode .stats-btn {
-  background-color: #1565C0;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-}
-
-.dark-mode .theme-toggle {
-  border-color: #f0f0f0;
-}
-
-@media (max-width: 600px) {
-  .app {
-    padding: 5px;
-  }
-
-  h1 {
-    font-size: 1.2rem;
-    margin-bottom: 5px;
-    order: -1;
-    width: 100%;
-  }
-
-  .header-controls {
-    width: 100%;
-    justify-content: space-between;
-    gap: 8px;
-  }
-
-  button {
-    padding: 8px 10px;
-    font-size: 0.85rem;
-    flex-grow: 1;
-    min-width: unset;
-  }
-
-  .theme-toggle {
-    flex-grow: 0;
-    padding: 6px 8px;
+  .dark-mode & {
+    background-color: $info-dark;
   }
 }
-/*
-@media (max-width: 400px) {
-  .header-controls {
-    flex-direction: column;
-  }
 
-  button {
-    width: 100%;
-  }
-}*/
+.total-questions {
+   display: inline-flex;
+   align-items: center;
+   gap: rem(6);
+   color: var(--text-secondary, #666);
+   font-size: rem(16);
+   cursor: pointer;
+   transition: all 0.3s ease;
+   padding: rem(4) rem(8);
+   border-radius: rem(4);
+   font-weight: 600;
+   margin: rem(5) auto;
+
+   &::before {
+     content: '📋';
+     font-size: rem(16);
+   }
+
+   &:hover {
+     color: var(--primary-color, #2196F3);
+     background-color: rgba(33, 150, 243, 0.1);
+   }
+
+   .dark-mode & {
+     --text-secondary: #aaa;
+
+     &:hover {
+       background-color: rgba(100, 181, 246, 0.1);
+     }
+   }
+ }
 
 .questions-counter {
-  font-size: 0.8rem;
-  color: #666;
+  font-size: rem(13);
+  color: $text-secondary-light;
   text-align: center;
   width: 100%;
-  margin-top: 5px;
+  margin-top: rem(5);
+
+  .dark-mode & {
+    color: $text-secondary-dark;
+  }
 }
 
-.dark-mode .questions-counter {
-  color: #aaa;
-}
 .app-footer {
-  margin-top: 40px;
-  padding-top: 20px;
-  border-top: 1px solid #eee;
-  font-size: 0.9rem;
+  margin-top: rem(40);
+  padding-top: rem(20);
+  border-top: 1px solid $border-light;
+  font-size: rem(14);
   text-align: center;
-}
 
-.dark-mode .app-footer {
-  border-top-color: #444;
+  .dark-mode & {
+    border-top-color: $border-dark;
+  }
 }
 
 .footer-content {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
+  gap: rem(16);
   align-items: center;
+  justify-content: center;
+}
+
+.developer-name {
+  span:last-child {
+    color: $primary-color;
+    font-weight: 500;
+  }
 }
 
 .footer-links {
   display: flex;
   justify-content: center;
-  gap: 20px;
+  gap: rem(20);
 }
 
-.footer-links a {
-  color: #666;
-  text-decoration: none;
-  transition: color 0.3s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.dark-mode .footer-links a {
-  color: #aaa;
-}
-
-.footer-links a:hover {
-  color: #2196F3;
-}
-
-.dark-mode .footer-links a:hover {
-  color: #64B5F6;
-}
-
-.total-questions {
-  color: #aaa;
-  font-size: 0.6rem;
-}
-
-@media (max-width: 600px) {
-  .app-footer {
-    font-size: 0.8rem;
-  }
-
-  .footer-links {
-    gap: 15px;
+// Адаптация для мобильных
+@include respond(sm) {
+  .app {
+    padding: rem(5);
   }
 }
 </style>
