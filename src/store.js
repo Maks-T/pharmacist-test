@@ -25,7 +25,7 @@ export const store = () => {
             return [...questions]
         } else {
             const shuffled = [...questions].sort(() => 0.5 - Math.random())
-            return shuffled.slice(0, 2)
+            return shuffled.slice(0, 20)
         }
     }
 
