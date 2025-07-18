@@ -28,9 +28,10 @@
         </tbody>
       </table>
       <Modal v-if="selectedQuestion" @close="closeQuestionModal">
-        <div class="question-modal-content">
-          <QuestionItem :question="selectedQuestion" />
-        </div>
+        <QuestionItem
+            :question="selectedQuestion"
+            @show-image="showImage"
+        />
       </Modal>
     </div>
   </Modal>
@@ -76,6 +77,9 @@ export default {
     },
     closeQuestionModal() {
       this.selectedQuestionId = null
+    },
+    showImage(questionId) {
+      this.$emit('show-image', questionId);
     }
   },
   components: {
@@ -197,10 +201,15 @@ $mobile-question-max-lines: 3;
 .question-modal-content {
   padding: $modal-padding;
   max-width: rem(800);
+  max-height: 80vh; // Ограничиваем высоту
+  overflow-y: auto; // Добавляем скролл при необходимости
+  display: flex;
+  flex-direction: column;
 
   @include respond(sm) {
     padding: rem(8);
-
+    max-height: 70vh; // Меньшая высота на мобильных
+    width: 95vw;
   }
 }
 

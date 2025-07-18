@@ -1,5 +1,5 @@
 <template>
-  <Modal @close="$emit('close')">
+  <Modal @close="$emit('close')" style="z-index: 3000">
     <img :src="image" :alt="'Изображение вопроса'" class="modal-image" />
   </Modal>
 </template>

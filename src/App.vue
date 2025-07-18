@@ -73,6 +73,7 @@
         :stats="stats"
         :questions="questions"
         @close="closeStatsModal"
+        @show-image="showImage"
     />
 
     <!-- Модальное окно изображения -->
@@ -87,6 +88,7 @@
         v-if="showQuestionsList"
         :questions="questions"
         @close="closeQuestionsListModal"
+        @show-image="showImage"
     />
   </div>
 </template>

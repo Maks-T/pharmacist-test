@@ -8,6 +8,7 @@
             v-for="question in questions"
             :key="question.id"
             :question="question"
+            @show-image="$emit('show-image', question.id)"
         />
       </div>
     </div>
@@ -29,7 +30,8 @@ export default {
     Modal,
     QuestionItem
   },
-  emits: ['close']
+  emits: ['close', 'show-image'] // Оставляем только объявление emits
+
 }
 </script>
 
