@@ -59,8 +59,8 @@ export default {
 }
 
 .mode-title {
-  font-size: rem(28);
-  margin-bottom: rem(10);
+  font-size: rem(22);
+  margin-bottom: rem(8);
   color: #333;
 
   .dark-mode & {

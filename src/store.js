@@ -94,7 +94,7 @@ export const store = () => {
         if (currentQuestionIndex.value < shuffledQuestions.value.length - 1) {
             currentQuestionIndex.value++
         } else {
-            testFinished.value = true
+            testFinished.value = true // Устанавливаем флаг завершения теста
         }
 
         saveProgress()
@@ -149,6 +149,7 @@ export const store = () => {
         if (progress) {
             currentMode.value = progress.mode
             currentQuestionIndex.value = progress.index
+            // Восстанавливаем полные объекты вопросов
             shuffledQuestions.value = progress.questionIds
                 .map(id => questions.value.find(q => q.id === id))
                 .filter(q => q !== undefined)
@@ -157,6 +158,11 @@ export const store = () => {
             showAnswerResult.value = progress.showAnswerResult || false
             darkMode.value = progress.darkMode || false
             testStarted.value = true
+
+            // Если вопросы не найдены, завершаем тест
+            if (shuffledQuestions.value.length === 0) {
+                finishTest()
+            }
         }
     }
 
@@ -185,7 +191,7 @@ export const store = () => {
         currentQuestionIndex.value = 0
         selectedAnswers.value = []
         results.value = []
-        testFinished.value = false
+        testFinished.value = false // Сбрасываем флаг
         showAnswerResult.value = false
         saveProgress()
     }
@@ -193,7 +199,7 @@ export const store = () => {
     // Завершить тест
     const finishTest = () => {
         testStarted.value = false
-        testFinished.value = false
+        testFinished.value = false // Сбрасываем флаг
         currentQuestionIndex.value = 0
         selectedAnswers.value = []
         results.value = []
@@ -237,6 +243,7 @@ export const store = () => {
         }
     })
 
+
     return {
         currentMode,
         currentQuestionIndex,
@@ -265,6 +272,7 @@ export const store = () => {
         shuffledAnswers,
         totalQuestionsCount,
         currentTestQuestionsCount,
-        testProgress
+        testProgress,
+        allQuestions: questions,
     }
 }

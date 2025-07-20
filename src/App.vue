@@ -30,7 +30,7 @@
           @start-test="startTest"
       />
       <Question
-          v-else-if="!testFinished"
+          v-if="!testFinished && testStarted"
           :question="currentQuestion"
           :shuffled-answers="shuffledAnswers"
           :selected-answers="selectedAnswers"
@@ -39,11 +39,12 @@
           @answer="answerQuestion"
           @next="nextQuestion"
           @show-image="showImage"
+          @answers-restored="handleAnswersRestored"
       />
       <Results
-          v-else
+          v-if="testFinished"
           :results="results"
-          :questions="shuffledQuestions"
+          :all-questions="questions"
           @restart="handleRestart"
           @finish="finishTest"
       />
@@ -144,7 +145,8 @@ export default {
       restoreProgress,
       currentQuestion,
       shuffledAnswers,
-      totalQuestionsCount
+      totalQuestionsCount,
+      allQuestions
     } = store()
 
     const hasStatistics = computed(() => {
@@ -172,6 +174,10 @@ export default {
       restoreProgress()
     })
 
+    const handleAnswersRestored = (answers) => {
+      selectedAnswers.value = answers
+      // Не устанавливаем showAnswerResult автоматически
+    }
     return {
       currentMode,
       currentQuestionIndex,
@@ -202,7 +208,8 @@ export default {
       currentQuestion,
       shuffledAnswers,
       hasStatistics,
-      totalQuestionsCount
+      totalQuestionsCount,
+      allQuestions
     }
   }
 }
@@ -266,7 +273,7 @@ header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: rem(30);
+  margin-bottom: rem(16);
   flex-wrap: wrap;
   gap: rem(5);
 }
@@ -367,36 +374,36 @@ button {
 }
 
 .total-questions {
-   display: inline-flex;
-   align-items: center;
-   gap: rem(6);
-   color: var(--text-secondary, #666);
-   font-size: rem(16);
-   cursor: pointer;
-   transition: all 0.3s ease;
-   padding: rem(4) rem(8);
-   border-radius: rem(4);
-   font-weight: 600;
-   margin: rem(5) auto;
+  display: inline-flex;
+  align-items: center;
+  gap: rem(6);
+  color: var(--text-secondary, #666);
+  font-size: rem(16);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: rem(4) rem(8);
+  border-radius: rem(4);
+  font-weight: 600;
+  margin: rem(5) auto;
 
-   &::before {
-     content: '📋';
-     font-size: rem(16);
-   }
+  &::before {
+    content: '📋';
+    font-size: rem(16);
+  }
 
-   &:hover {
-     color: var(--primary-color, #2196F3);
-     background-color: rgba(33, 150, 243, 0.1);
-   }
+  &:hover {
+    color: var(--primary-color, #2196F3);
+    background-color: rgba(33, 150, 243, 0.1);
+  }
 
-   .dark-mode & {
-     --text-secondary: #aaa;
+  .dark-mode & {
+    --text-secondary: #aaa;
 
-     &:hover {
-       background-color: rgba(100, 181, 246, 0.1);
-     }
-   }
- }
+    &:hover {
+      background-color: rgba(100, 181, 246, 0.1);
+    }
+  }
+}
 
 .questions-counter {
   font-size: rem(13);

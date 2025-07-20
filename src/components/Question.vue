@@ -293,16 +293,16 @@ export default {
   margin: rem(10) 0;
   padding: rem(10);
   border-radius: rem(8);
-  background-color: var(--result-bg, #FFF3E0); // Светло-оранжевый фон
+  background-color: var(--result-bg, #E8F5E9); // Светло-зеленый фон
   animation: fadeIn 0.5s ease;
   box-shadow: 0 rem(2) rem(8) rgba(0, 0, 0, 0.1);
 
   // Темная тема
   .dark-mode & {
-    --result-bg: #332821;
-    --correct-text: #FFB74D; // Светло-оранжевый
+    --result-bg: #1B3B24;
+    --correct-text: #81C784; // Светло-зеленый
     --incorrect-text: #EF9A9A;
-    --correct-bg: #4E342E; // Темно-коричневый
+    --correct-bg: #2E4E3D; // Темно-зеленый
   }
 
   p {
@@ -312,14 +312,14 @@ export default {
     line-height: 1.4;
 
     &.correct {
-      color: #FF9800; // Основной оранжевый
+      color: #4CAF50; // Основной зеленый
       .dark-mode & {
         color: var(--correct-text);
       }
     }
 
     &.incorrect {
-      color: #E53935; // Ярко-красный
+      color: #E53935; // Ярко-красный (оставляем как было)
       .dark-mode & {
         color: var(--incorrect-text);
       }
@@ -327,10 +327,10 @@ export default {
   }
 
   > p:not(.correct):not(.incorrect) {
-    color: #5D4037; // Темно-коричневый
+    color: #2E7D32; // Темно-зеленый
     font-weight: normal;
     .dark-mode & {
-      color: #D7CCC8; // Светло-бежевый
+      color: #C8E6C9; // Светло-зеленый
     }
   }
 
@@ -344,8 +344,8 @@ export default {
     padding: rem(10) rem(15);
     margin: rem(8) 0;
     border-radius: rem(6);
-    background-color: #FFE0B2; // Светло-оранжевый
-    color: #BF360C; // Темно-оранжевый
+    background-color: #C8E6C9; // Светло-зеленый
+    color: #1B5E20; // Темно-зеленый
     font-weight: 500;
     transition: transform 0.2s ease;
 

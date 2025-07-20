@@ -1,29 +1,21 @@
+/* main.css */
 @import './base.css';
 
 #app {
     max-width: 1280px;
     margin: 0 auto;
-    padding: 0.4rem;
+    padding: 2rem;
     font-weight: normal;
+    background-color: var(--color-background);
+    color: var(--color-text);
+    min-height: 100vh;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-a,
-.green {
-    text-decoration: none;
-    color: hsla(160, 100%, 37%, 1);
-    transition: 0.4s;
-    padding: 3px;
-}
-
-@media (hover: hover) {
-    a:hover {
-        background-color: hsla(160, 100%, 37%, 0.2);
-    }
-}
-
+/* Адаптивные стили */
 @media (max-width: 600px) {
     #app {
-
+        padding: 1rem;
     }
 }
 
@@ -34,8 +26,7 @@ a,
     }
 
     #app {
-
+        padding: 0 2rem;
+        width: 100%;
     }
 }
-
-

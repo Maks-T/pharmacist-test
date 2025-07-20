@@ -49,7 +49,7 @@ export default {
   right: 8px;
 
   transform: translateY(-100%);
-  background-color: rgba(0, 0, 0, 0.1);
+  background-color: white;
   border: none;
   border-radius: 50%;
   font-size: 28px;
