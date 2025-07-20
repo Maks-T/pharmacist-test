@@ -1,5 +1,6 @@
 import { ref, computed } from 'vue'
 import questionsData from './data/questions.json'
+import drugsData from './data/drugs.json'
 
 export const store = () => {
     // Состояние
@@ -16,6 +17,7 @@ export const store = () => {
     const showStats = ref(false)
     const stats = ref(JSON.parse(localStorage.getItem('pharmaTestStats')) || {})
     const questions = ref(questionsData)
+    const drugs = ref(drugsData)
 
     // Получить вопросы для выбранного режима
     const getQuestionsForMode = (mode) => {
@@ -243,7 +245,6 @@ export const store = () => {
         }
     })
 
-
     return {
         currentMode,
         currentQuestionIndex,
@@ -257,6 +258,7 @@ export const store = () => {
         modalImage,
         showStats,
         questions,
+        drugs,
         startTest,
         answerQuestion,
         nextQuestion,
@@ -274,5 +276,6 @@ export const store = () => {
         currentTestQuestionsCount,
         testProgress,
         allQuestions: questions,
+        allDrugs: drugs
     }
 }

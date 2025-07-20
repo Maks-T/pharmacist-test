@@ -3,6 +3,7 @@
     <header>
       <h1>Тестирование фармацевта</h1>
       <span class="total-questions" @click="showQuestionsListModal">Все вопросы: {{ totalQuestionsCount }}</span>
+      <span class="cheat-sheet" @click="showCheatSheetModal">Шпаргалка</span>
       <div class="header-controls">
         <button
             v-if="testStarted && !testFinished"
@@ -91,19 +92,29 @@
         @close="closeQuestionsListModal"
         @show-image="showImage"
     />
+
+    <!-- Модальное окно шпаргалки -->
+    <CheatSheetModal
+        v-if="showCheatSheet"
+        :drugs="drugs"
+        :questions="questions"
+        @close="closeCheatSheetModal"
+        @show-image="showImage"
+    />
   </div>
 </template>
 
 <script>
-import { computed, onMounted, ref } from 'vue'
+import {computed, onMounted, ref} from 'vue'
 import ModeSelection from './components/ModeSelection.vue'
 import Question from './components/Question.vue'
 import Results from './components/Results.vue'
 import ImageModal from './components/ImageModal.vue'
 import StatsModal from './components/StatsModal.vue'
 import QuestionsListModal from './components/QuestionsListModal.vue'
-import { store } from './store'
-import SocialLink from "@/components/SocialLink.vue";
+import CheatSheetModal from './components/CheatSheetModal.vue'
+import {store} from './store'
+import SocialLink from "@/components/SocialLink.vue"
 
 export default {
   name: 'App',
@@ -114,7 +125,8 @@ export default {
     Results,
     ImageModal,
     StatsModal,
-    QuestionsListModal
+    QuestionsListModal,
+    CheatSheetModal
   },
 
   setup() {
@@ -132,6 +144,7 @@ export default {
       showStats,
       stats,
       questions,
+      drugs,
       startTest,
       answerQuestion,
       nextQuestion,
@@ -154,6 +167,7 @@ export default {
     })
 
     const showQuestionsList = ref(false)
+    const showCheatSheet = ref(false)
 
     const showQuestionsListModal = () => {
       if (questions.value && questions.value.length > 0) {
@@ -163,6 +177,14 @@ export default {
 
     const closeQuestionsListModal = () => {
       showQuestionsList.value = false
+    }
+
+    const showCheatSheetModal = () => {
+      showCheatSheet.value = true
+    }
+
+    const closeCheatSheetModal = () => {
+      showCheatSheet.value = false
     }
 
     const handleRestart = () => {
@@ -176,8 +198,8 @@ export default {
 
     const handleAnswersRestored = (answers) => {
       selectedAnswers.value = answers
-      // Не устанавливаем showAnswerResult автоматически
     }
+
     return {
       currentMode,
       currentQuestionIndex,
@@ -192,7 +214,9 @@ export default {
       showStats,
       stats,
       questions,
+      drugs, // Return drugs from store
       showQuestionsList,
+      showCheatSheet,
       startTest,
       answerQuestion,
       nextQuestion,
@@ -205,6 +229,8 @@ export default {
       closeStatsModal,
       showQuestionsListModal,
       closeQuestionsListModal,
+      showCheatSheetModal,
+      closeCheatSheetModal,
       currentQuestion,
       shuffledAnswers,
       hasStatistics,
@@ -373,7 +399,8 @@ button {
   }
 }
 
-.total-questions {
+.total-questions,
+.cheat-sheet {
   display: inline-flex;
   align-items: center;
   gap: rem(6);
@@ -403,6 +430,10 @@ button {
       background-color: rgba(100, 181, 246, 0.1);
     }
   }
+}
+
+.cheat-sheet::before {
+  content: '📚';
 }
 
 .questions-counter {
