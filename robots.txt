@@ -1,0 +1,3 @@
+Sitemap: https://pharma-exam-rb.online/sitemap.xml
+User-agent: Yandex
+Allow: /favicon.ico
