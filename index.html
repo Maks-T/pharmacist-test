@@ -96,12 +96,20 @@
 <!-- Yandex.RTB R-A-17542952-1 -->
 <div id="yandex_rtb_R-A-17542952-1"></div>
 <script>
-    window.yaContextCb.push(() => {
-        Ya.Context.AdvManager.render({
-            "blockId": "R-A-17542952-1",
-            "renderTo": "yandex_rtb_R-A-17542952-1"
+    // Проверяем есть ли параметр noads в URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const hasNoAds = urlParams.has('noads');
+
+    // Выполняем код только если параметра noads нет
+    if (!hasNoAds) {
+        window.yaContextCb.push(() => {
+            Ya.Context.AdvManager.render({
+                "blockId": "R-A-17542952-1",
+                "renderTo": "yandex_rtb_R-A-17542952-1"
+            })
         })
-    })
+    }
+
 </script>
 
 <div id="app"></div>
