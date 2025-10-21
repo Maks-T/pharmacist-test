@@ -81,34 +81,12 @@
     })(window,document,'script','dataLayer','GTM-P46ZXXV2');</script>
     <!-- End Google Tag Manager -->
 
-    <!-- Yandex.RTB -->
-    <script>window.yaContextCb=window.yaContextCb||[]</script>
-    <script src="https://yandex.ru/ads/system/context.js" async></script>
 </head>
 <body>
 <!-- Google Tag Manager (noscript) -->
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-P46ZXXV2"
                   height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- End Google Tag Manager (noscript) -->
-
-<!-- Yandex.RTB R-A-17542952-1 -->
-<div id="yandex_rtb_R-A-17542952-1"></div>
-<script>
-    // Проверяем есть ли параметр noads в URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const hasNoAds = urlParams.has('noads');
-
-    // Выполняем код только если параметра noads нет
-    if (!hasNoAds) {
-        window.yaContextCb.push(() => {
-            Ya.Context.AdvManager.render({
-                "blockId": "R-A-17542952-1",
-                "renderTo": "yandex_rtb_R-A-17542952-1"
-            })
-        })
-    }
-
-</script>
 
 <div id="app"></div>
 <script type="module" src="/src/main.js"></script>
