@@ -2,17 +2,34 @@
   <Modal @close="$emit('close')">
     <div class="stats-modal-content">
       <h2>Статистика</h2>
+
       <table class="stats-table">
         <thead>
         <tr>
-          <th>№</th>
+          <th @click="sortBy('number')" class="sortable">
+            №
+            <span v-if="sortKey === 'number'" class="sort-arrow">
+                {{ sortOrder === 'asc' ? '↑' : '↓' }}
+              </span>
+          </th>
           <th>Вопрос</th>
-          <th>Попытки</th>
-          <th>Ошибки</th>
+          <th @click="sortBy('total')" class="sortable">
+            Попытки
+            <span v-if="sortKey === 'total'" class="sort-arrow">
+                {{ sortOrder === 'asc' ? '↑' : '↓'}}
+              </span>
+          </th>
+          <th @click="sortBy('errors')" class="sortable">
+            Ошибки
+            <span v-if="sortKey === 'errors'" class="sort-arrow">
+                {{ sortOrder === 'asc' ? '↑' : '↓' }}
+              </span>
+          </th>
         </tr>
         </thead>
+
         <tbody>
-        <tr v-for="(stat, questionId) in stats" :key="questionId">
+        <tr v-for="(stat, questionId) in sortedStats" :key="questionId">
           <td>{{ getQuestionNumber(questionId) }}</td>
           <td>
               <span
@@ -27,6 +44,8 @@
         </tr>
         </tbody>
       </table>
+
+      <!-- Встроенный модальный просмотр вопроса -->
       <Modal v-if="selectedQuestion" @close="closeQuestionModal">
         <QuestionItem
             :question="selectedQuestion"
@@ -42,49 +61,104 @@ import Modal from './Modal.vue'
 import QuestionItem from './QuestionItem.vue'
 
 export default {
+  components: { Modal, QuestionItem },
+
   props: {
-    stats: {
-      type: Object,
-      required: true
-    },
-    questions: {
-      type: Array,
-      default: () => []
-    }
+    stats: { type: Object, required: true },
+    questions: { type: Array, default: () => [] }
   },
-  emits: ['close'],
+
+  emits: ['close', 'show-image'],
+
   data() {
     return {
-      selectedQuestionId: null
+      selectedQuestionId: null,
+      sortKey: 'number',      // по умолчанию сортируем по номеру
+      sortOrder: 'asc'        // asc / desc
     }
   },
+
   computed: {
+    // ---------- Сортированный массив ----------
+    sortedStats() {
+      const entries = Object.entries(this.stats)
+
+      // Если нет данных – возвращаем пустой массив
+      if (!entries.length) return {}
+
+      // Сортируем
+      const sorted = entries.sort(([idA, a], [idB, b]) => {
+        let aVal, bVal
+
+        switch (this.sortKey) {
+          case 'number':
+            aVal = this.getQuestionNumber(idA)
+            bVal = this.getQuestionNumber(idB)
+            break
+          case 'total':
+            aVal = a.total
+            bVal = b.total
+            break
+          case 'errors':
+            aVal = a.total - a.correct
+            bVal = b.total - b.correct
+            break
+          default:
+            aVal = 0
+            bVal = 0
+        }
+
+        // Приведение к числу (на случай, если getQuestionNumber вернёт строку)
+        const diff = Number(aVal) - Number(bVal)
+        return this.sortOrder === 'asc' ? diff : -diff
+      })
+
+      // Превращаем обратно в объект { id: stat }
+      return Object.fromEntries(sorted)
+    },
+
+    // ---------- Вспомогательные ----------
     selectedQuestion() {
       return this.questions.find(q => q.id === this.selectedQuestionId) || null
     }
   },
+
   methods: {
-    getQuestionText(questionId) {
-      const question = this.questions.find(q => q.id === questionId)
-      return question ? question.question : 'Вопрос не найден'
+    // ---------- Сортировка ----------
+    sortBy(key) {
+      if (this.sortKey === key) {
+        // Клик по той же колонке → меняем направление
+        this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc'
+      } else {
+        // Новая колонка → по возрастанию
+        this.sortKey = key
+        this.sortOrder = 'asc'
+      }
     },
-    getQuestionNumber(questionId) {
-      const question = this.questions.find(q => q.id === questionId)
-      return question ? question.number.replace('Вопрос №', '') : '-'
+
+    // ---------- Вспомогательные ----------
+    getQuestionText(id) {
+      const q = this.questions.find(q => q.id === id)
+      return q ? q.question : 'Вопрос не найден'
     },
-    showQuestionModal(questionId) {
-      this.selectedQuestionId = questionId
+
+    getQuestionNumber(id) {
+      const q = this.questions.find(q => q.id === id)
+      // Ожидаем формат "Вопрос №12" → берём цифру
+      return q ? q.number.replace(/[^\d]/g, '') : '-'
     },
+
+    showQuestionModal(id) {
+      this.selectedQuestionId = id
+    },
+
     closeQuestionModal() {
       this.selectedQuestionId = null
     },
-    showImage(questionId) {
-      this.$emit('show-image', questionId);
+
+    showImage(id) {
+      this.$emit('show-image', id)
     }
-  },
-  components: {
-    Modal,
-    QuestionItem
   }
 }
 </script>
@@ -100,6 +174,19 @@ $question-line-height: 1.4;
 $question-max-lines: 5;
 $mobile-question-max-lines: 3;
 
+// ---- Сортируемые заголовки ----
+.sortable {
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+  padding-right: rem(20) !important; // место под стрелку
+}
+
+.sort-arrow {
+  margin-left: 4px;
+  font-weight: bold;
+  font-size: rem(14);
+}
 // Modal content
 .stats-modal-content {
   max-height: calc(80vh - #{rem(20)});

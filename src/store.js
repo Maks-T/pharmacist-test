@@ -20,19 +20,23 @@ export const store = () => {
     const drugs = ref(drugsData)
 
     // Получить вопросы для выбранного режима
-    const getQuestionsForMode = (mode) => {
+    const getQuestionsForMode = (mode, modeParams = {}) => {
         switch (mode) {
             case 'order':
-                return [...questions.value] // Все вопросы по порядку
+                return [...questions.value]
             case 'random-20':
-                return getWeightedRandomQuestions(20) // 20 случайных вопросов
+                return getWeightedRandomQuestions(20)
             case 'random-10':
-                return getWeightedRandomQuestions(10) // 10 случайных вопросов
+                return getWeightedRandomQuestions(10)
+            case 'free':
+                const { start = 1, end = questions.value.length } = modeParams
+                const startIdx = Math.max(0, start - 1)
+                const endIdx = Math.min(questions.value.length, end)
+                return questions.value.slice(startIdx, endIdx)
             default:
                 return [...questions.value]
         }
     }
-
     // Получить взвешенный случайный список вопросов
     const getWeightedRandomQuestions = (count) => {
         const scoredQuestions = questions.value.map(question => {
@@ -60,9 +64,12 @@ export const store = () => {
     }
 
     // Начать тест
-    const startTest = (mode) => {
+    let lastModeParams = {}
+
+    const startTest = (mode, modeParams = {}) => {
         currentMode.value = mode
-        shuffledQuestions.value = getQuestionsForMode(mode)
+        lastModeParams = modeParams
+        shuffledQuestions.value = getQuestionsForMode(mode, modeParams)
         currentQuestionIndex.value = 0
         selectedAnswers.value = []
         results.value = []
@@ -71,7 +78,6 @@ export const store = () => {
         showAnswerResult.value = false
         saveProgress()
     }
-
     // Ответить на вопрос
     const answerQuestion = () => {
         const question = shuffledQuestions.value[currentQuestionIndex.value]
@@ -131,6 +137,7 @@ export const store = () => {
     const saveProgress = () => {
         const progress = {
             mode: currentMode.value,
+            modeParams: currentMode.value === 'free' ? lastModeParams : undefined,
             index: currentQuestionIndex.value,
             questionIds: shuffledQuestions.value.map(q => q.id),
             results: results.value.map(r => ({
@@ -187,13 +194,14 @@ export const store = () => {
 
     // Перезапустить тест
     const restartTest = () => {
-        if (currentMode.value) {
-            shuffledQuestions.value = getQuestionsForMode(currentMode.value)
-        }
+        const saved = JSON.parse(localStorage.getItem('pharmaTestProgress'))
+        const mode = currentMode.value || saved?.mode
+        const modeParams = saved?.modeParams || {}
+        shuffledQuestions.value = getQuestionsForMode(mode, modeParams)
         currentQuestionIndex.value = 0
         selectedAnswers.value = []
         results.value = []
-        testFinished.value = false // Сбрасываем флаг
+        testFinished.value = false
         showAnswerResult.value = false
         saveProgress()
     }
@@ -276,6 +284,7 @@ export const store = () => {
         currentTestQuestionsCount,
         testProgress,
         allQuestions: questions,
-        allDrugs: drugs
+        allDrugs: drugs,
+
     }
 }

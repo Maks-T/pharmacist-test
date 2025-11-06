@@ -28,7 +28,8 @@
     <main>
       <ModeSelection
           v-if="!testStarted && !testFinished"
-          @start-test="startTest"
+          :total-questions="totalQuestionsCount"
+          @start-test="handleStartTest"
       />
       <Question
           v-if="!testFinished && testStarted"
@@ -145,7 +146,7 @@ export default {
       stats,
       questions,
       drugs,
-      startTest,
+      startTest: storeStartTest,
       answerQuestion,
       nextQuestion,
       restartTest,
@@ -161,6 +162,10 @@ export default {
       totalQuestionsCount,
       allQuestions
     } = store()
+
+    const handleStartTest = (mode, modeParams = {}) => {
+      storeStartTest(mode, modeParams)
+    }
 
     const hasStatistics = computed(() => {
       return Object.keys(stats.value).length > 0
@@ -217,7 +222,7 @@ export default {
       drugs, // Return drugs from store
       showQuestionsList,
       showCheatSheet,
-      startTest,
+      storeStartTest,
       answerQuestion,
       nextQuestion,
       handleRestart,
@@ -235,7 +240,9 @@ export default {
       shuffledAnswers,
       hasStatistics,
       totalQuestionsCount,
-      allQuestions
+      allQuestions,
+      handleStartTest,
+      handleAnswersRestored
     }
   }
 }

@@ -30,18 +30,72 @@
         <span class="mode-name">Быстрые 10</span>
         <span class="mode-details">Короткий тест из 10 вопросов</span>
       </button>
+
+      <button
+          @click="openFreeMode"
+          class="mode-btn free-mode"
+      >
+        <span class="mode-icon">🎯</span>
+        <span class="mode-name">Свободный режим</span>
+        <span class="mode-details">Выберите диапазон вопросов</span>
+      </button>
     </div>
+
+    <FreeModeModal
+        v-if="showFreeMode"
+        :total="totalQuestions"
+        @start="startFreeTest"
+        @close="showFreeMode = false"
+    />
   </div>
 </template>
 
+
 <script>
+import FreeModeModal from "@/components/FreeModeModal.vue";
+
 export default {
-  emits: ['start-test']
+  emits: ['start-test'],
+  props: {
+    totalQuestions: {
+      type: Number,
+      required: true
+    }
+  },
+  data() {
+    return {
+      showFreeMode: false
+    }
+  },
+  components: {
+    FreeModeModal
+  },
+  methods: {
+    openFreeMode() {
+      this.showFreeMode = true
+    },
+    startFreeTest({start, end}) {
+      this.$emit('start-test', 'free', {start, end})
+      this.showFreeMode = false
+    }
+  }
 }
 </script>
 
 <style lang="scss">
 @import './../index.scss';
+
+.free-mode {
+  border-top: rem(4) solid #9C27B0;
+
+  &:hover {
+    background-color: #E1BEE7;
+
+    .dark-mode & {
+      background-color: #4A148C;
+    }
+  }
+}
 
 .mode-selection {
   text-align: center;
